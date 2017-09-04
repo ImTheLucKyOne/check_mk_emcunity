@@ -2,7 +2,7 @@
 Check_MK Extensions for Dell EMC Unity Storages
 
 !!! Only tested with EMC Unity 300 !!!
-!!! Latest (08/17) Firmware Update 4.2.0.9476662 mandatory !!!
+!!! Latest (08/17) Firmware Update 4.2.0.9476662 mandatory for LUN and VMFS checks to work !!!
 
 # About:
 If you are searching for check_mk plugins to monitor your Dell EMC Unity Storage System, this project is one place to look for.
