@@ -1,0 +1,108 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+# 1:    ID                         = sv_3
+      # Name                       = MAilArchiv
+      # Description                =
+      # Group                      =
+      # Storage pool ID            = pool_2
+      # Storage pool               = Archiv
+      # Type
+      # Base storage resource
+      # Source
+      # Original Parent
+      # Health state               = OK (5)
+      # Health details             = "The LUN is operating normally. No action is required."
+      # Size                       = 4509715660800 (4.1T)
+      # Maximum size               = 281474976710656 (256.0T)
+      # Thin provisioning enabled  = yes
+      # Compression enabled        = no
+      # Compression space saved    = 0
+      # Compression percent        = 0%
+      # Compression ratio          = 1:1
+      # Current allocation         = 30216601600 (28.1G)
+      # Protection size used       = 0
+      # Non-base size used
+      # Family size used
+      # Snapshot count             = 0
+      # Family snapshot count
+      # Family thin clone count
+      # Protection schedule        =
+      # Protection schedule paused = no
+      # WWN                        = 60:06:01:60:95:C0:42:00:C2:E1:2F:59:A7:DA:24:7F
+      # Replication destination    = no
+      # Creation time              = 2017-06-01 09:43:30
+      # Last modified time         = 2017-06-01 10:21:18
+      # SP owner                   = SPA
+      # Trespassed                 = no
+      # FAST VP policy             = Start high then auto-tier
+      # FAST VP distribution       = Extreme Performance: 0%, Performance: 100%, Capacity: 0%
+      # LUN access hosts           = Host_7
+      # Snapshots access hosts     =
+      # IO limit                   =
+      # Effective maximum IOPS     = N/A
+      # Effective maximum KBPS     = N/A
+
+def inventory_emcunity_lun(info):
+    for line in info:
+        if re.match("Name", line[0]):
+            item = line[1].lstrip()
+            yield item, None
+
+def check_emcunity_lun(item, params, info):
+    i = 0
+    for line in info:
+        if info[i][1].lstrip() == item:
+            # get bytes from agent output
+            size_B = re.search("\d+", info[i+11][1].lstrip()).group(0)
+            used_B = re.search("\d+", info[i+18][1].lstrip()).group(0)
+
+            used_mb = int(used_B) / 1024.0 / 1024.0
+            size_mb = int(size_B) / 1024.0 / 1024.0
+            avail_mb = size_mb - used_mb
+
+            # get health details
+            hstate = info[i+9][1].lstrip()
+            hdetail = info[i+10][1].lstrip()
+
+            # get status, infotext and perfdata
+            status, infotext, perfdata = df_check_filesystem_single(g_hostname,	item, size_mb, avail_mb, 0, None, None, params)
+            infotext += ", EMC State: %s %s" % (hstate, hdetail)
+        i += 1
+    return status, infotext, perfdata
+
+check_info["emcunity_lun"] = {
+    'check_function'             :    check_emcunity_lun,
+    'inventory_function'         :    inventory_emcunity_lun,
+    'has_perfdata'               :    True,
+    'service_description'        :    'LUN %s',
+    'includes'                   :    [ 'emcunity.include', 'df.include' ],
+    'group'                      :    "filesystem",
+    'default_levels_variable'    :    "filesystem_default_levels",
+}

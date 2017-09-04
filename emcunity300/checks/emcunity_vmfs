@@ -1,0 +1,110 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+# 1:    ID                         = res_1
+      # LUN                        = sv_1
+      # Name                       = VMStore01
+      # Description                =
+      # Type
+      # Base storage resource
+      # Source
+      # Original parent
+      # Health state               = OK (5)
+      # Health details             = "The component is operating normally. No action is required."
+      # Storage pool ID            = pool_1
+      # Storage pool               = VMWare
+      # Size                       = 2199023255552 (2.0T)
+      # Maximum size               = 70368744177664 (64.0T)
+      # Thin provisioning enabled  = yes
+      # Compression enabled        = no
+      # Compression space saved    = 0
+      # Compression percent        = 0%
+      # Compression ratio          = 1:1
+      # Current allocation         = 713951363072 (664.9G)
+      # Protection size used       = 0
+      # Non-base size used
+      # Family size used
+      # Snapshot count             = 0
+      # Family snapshot count
+      # Family thin clone count
+      # Protection schedule        =
+      # Protection schedule paused = no
+      # SP owner                   = SPB
+      # Trespassed                 = no
+      # Version                    =
+      # Block size                 =
+      # Virtual disk access hosts  = Host_4, Host_5
+      # Snapshots access hosts     =
+      # WWN                        = 60:06:01:60:95:C0:42:00:8C:47:45:58:AD:BE:8D:11
+      # Replication destination    = no
+      # Creation time              = 2016-12-05 10:55:03
+      # Last modified time         = 2016-12-05 10:55:03
+      # FAST VP policy             = Start high then auto-tier
+      # FAST VP distribution       = Extreme Performance: 0%, Performance: 100%, Capacity: 0%
+      # IO limit                   =
+      # Effective maximum IOPS     = N/A
+      # Effective maximum KBPS     = N/A
+
+def inventory_emcunity_vmfs(info):
+    for line in info:
+        if re.match("Name", line[0]):
+            item = line[1].lstrip()
+            yield item, None
+
+def check_emcunity_vmfs(item, params, info):
+    i = 0
+    for line in info:
+        if info[i][1].lstrip() == item:
+            # get bytes from agent output
+            size_B = re.search("\d+", info[i+10][1].lstrip()).group(0)
+            used_B = re.search("\d+", info[i+17][1].lstrip()).group(0)
+
+            used_mb = int(used_B) / 1024.0 / 1024.0
+            size_mb = int(size_B) / 1024.0 / 1024.0
+            avail_mb = size_mb - used_mb
+
+            # get health details
+            hstate = info[i+6][1].lstrip()
+            hdetail = info[i+7][1].lstrip()
+
+            # get status, infotext and perfdata
+            status, infotext, perfdata = df_check_filesystem_single(g_hostname,	item, size_mb, avail_mb, 0, None, None, params)
+            infotext += ", EMC State: %s %s" % (hstate, hdetail)
+        i += 1
+    return status, infotext, perfdata
+
+check_info["emcunity_vmfs"] = {
+    'check_function'             :    check_emcunity_vmfs,
+    'inventory_function'         :    inventory_emcunity_vmfs,
+    'has_perfdata'               :    True,
+    'service_description'        :    'VMFS %s',
+    'includes'                   :    [ 'emcunity.include', 'df.include' ],
+    'group'                      :    "filesystem",
+    'default_levels_variable'    :    "filesystem_default_levels",
+}

@@ -1,0 +1,60 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+import os, sys, re, subprocess
+
+cmdpath = "/usr/bin/uemcli"
+cmd = "uemcli"
+# Check args
+if len(sys.argv) < 4:
+    print "ERROR: Missing argument, we need HOST USER PASSWORD in given order"
+    sys.exit(1)
+else:
+    host = sys.argv[1]
+    user = sys.argv[2]
+    pw = sys.argv[3]
+
+# Test if uemcli command is available
+if os.path.isfile(cmdpath) == False and os.access(cmdpath, os.X_OK) == False:
+    print "ERROR: Executable uemcli does not exist or is not executable!"
+    sys.exit(1)
+
+basecmd = "%s -noHeader -sslPolicy store -d %s -u %s -p %s " % (cmd, host, user, pw)
+
+# EMC Unity firmware version as Check_MK version
+execline = "%s /sys/soft/ver show" % (basecmd)
+
+cmdout = [ line.strip() for line in os.popen(execline + " 2>&1").readlines() ]
+emcversion = cmdout
+for line in cmdout:
+    tokens = re.split("\s+", line)
+    if tokens[0] == "Version":
+        emcversion = tokens[2]
+
+print "<<<check_mk>>>"
+print "Version: %s" % emcversion
+
+# Hard coded items we want to check with uemcli
+checks = {
+    "battery"    : {"cmd_option" : "/env/bat show -detail"},
+    "pwrsupply"  : {"cmd_option" : "/env/ps show -detail"},
+    "fan"        : {"cmd_option" : "/env/fan show -detail"},
+    "memory"     : {"cmd_option" : "/env/mm show -detail"},
+    "dpe"        : {"cmd_option" : "/env/dpe show -detail"},
+    "sp"         : {"cmd_option" : "/env/sp show -detail"},
+    "disk"       : {"cmd_option" : "/env/disk show -detail"},
+    "ssd"        : {"cmd_option" : "/env/ssd show -detail"},
+    "general"    : {"cmd_option" : "/sys/general show -detail"},
+    "pool"      : {"cmd_option" : "/stor/config/pool show -detail"},
+    "lun"       : {"cmd_option" : "/stor/prov/luns/lun show -detail"},
+    "vmfs"       : {"cmd_option" : "/stor/prov/vmware/vmfs show -detail"},
+}
+
+for check in checks.keys():
+    print '<<<emcunity_%s:sep(61)>>>' % (check)
+    execline = basecmd + checks[check]["cmd_option"]
+    for line in os.popen(execline).readlines():
+        print line,

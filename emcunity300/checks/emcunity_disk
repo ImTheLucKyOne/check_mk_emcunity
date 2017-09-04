@@ -1,0 +1,109 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+# <<<emcunity_disks:sep(61)>>>
+# 1:    ID                 = dpe_disk_4
+# Enclosure          = dpe
+# Slot               = 4
+# Bank slot          =
+# Name               = DPE Disk 4
+# Health state       = OK (5)
+# Health details     = "The component is operating normally. No action is required."
+# Type               = SAS
+# Tier               = Performance
+# Capacity           = 1181778411520 (1.0T)
+# Rotational speed   = 10000 rpm
+# User capacity      = 1181744857088 (1.0T)
+# Used by FAST Cache = no
+# Pool ID            = Unconfigured
+# Pool               = Unconfigured
+# Current speed      = 12 Gbps
+# Maximum speed      = 12 Gbps
+# Manufacturer       = SEAGATE
+# Model              = STTBSKD2 EMC1200
+# Vendor capacity    = 1.2T
+# Part number        = 005051632
+# Serial number      = S401RK3V
+# Firmware revision  = TN0F
+# WWN                = 06:00:00:00:05:00:00:00:00:01:00:00:00:00:00:03
+
+# 2:    ID                 = dpe_disk_8
+# Enclosure          = dpe
+# Slot               = 8
+# Bank slot          =
+# Name               = DPE Disk 8
+# Health state       = OK (5)
+# Health details     = "The component is operating normally. No action is required."
+# Type               = SAS Flash 2
+# Tier               = Extreme Performance
+# Capacity           = 196971960832 (183.4G)
+# Rotational speed   = 0 rpm
+# User capacity      = 196938406400 (183.4G)
+# Used by FAST Cache = no
+# Pool ID            = Unconfigured
+# Pool               = Unconfigured
+# Current speed      = 12 Gbps
+# Maximum speed      = 12 Gbps
+# Manufacturer       = HITACHI
+# Model              = HUSMH842 EMC200
+# Vendor capacity    = 200.0G
+# Part number        = 005051589
+# Serial number      = 0LY34YMA
+# Firmware revision  = C342
+# WWN                = 06:00:00:00:05:00:00:00:04:01:00:00:00:00:00:
+
+def inventory_emcunity_disk(info):
+    i = 0
+    for line in info:
+        # search for name as item
+        if re.match("Name", info[i][0]):
+            # just return something if slot not empty (check if serial nr entry is not empty)
+            if info[i+17][1].lstrip() != "":
+                item = re.search("\d+", line[1].lstrip()).group(0)
+                yield item, None
+        i += 1
+
+def check_emcunity_disk(item, params, info):
+    i = 0
+    for line in info:
+        if re.match("Name", info[i][0]) and re.search("\d+", info[i][1].lstrip()).group(0) == item:
+            hstate = info[i+1][1].lstrip()
+            hdetail = info[i+2][1].lstrip()
+            hddtype = info[i+3][1].lstrip()
+            model = info[i+14][1].lstrip()
+            pool = info[i+10][1].lstrip()       
+        i += 1
+    return parse_emcstate(hstate), "%s, %s, Model: %s, Type: %s, Pool: %s" % (hstate, hdetail, model, hddtype, pool)
+
+check_info["emcunity_disk"] = {
+    'check_function'        :    check_emcunity_disk,
+    'inventory_function'    :    inventory_emcunity_disk,
+    'service_description'   :    'HW Disk %s',
+    'includes'              :    [ 'emcunity.include' ],
+}

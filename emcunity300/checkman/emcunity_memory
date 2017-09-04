@@ -1,0 +1,22 @@
+title: EMC Unity Storage: Status Memory
+agents: emcunity
+catalog: hw/storagehw/emc
+license: GPL
+distribution: check_mk
+description:
+ Reports the status and model of a memory module in an EMC Unity storage system.
+
+ The check returns {OK}, {WARN}, or {CRIT} depending on the health state reported by the special agent.
+
+ The information is retrieved by the special agent agent_emcunity which uses
+ EMC's command line tool uemcli.
+
+item:
+ Generated with the "Name" value of the memory module in the agent output.
+ E.g. "SP A Memory Module 1"
+
+perfdata:
+ None
+
+inventory:
+ Automatically configures one check for every memory module listed in the agent output.

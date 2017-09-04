@@ -1,0 +1,73 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+# 1:    ID             = spb_ssd
+      # SP             = spb
+      # Slot           = 0
+      # Name           = SP B Internal Disk
+      # Health state   = OK (5)
+      # Health details = "The component is operating normally. No action is required."
+      # Manufacturer   =
+      # Model          = Intel DC 3500 Series SSDs M.2
+      # Part number    = INTEL SSDSCKHB080G4M           118000039
+      # Serial number  = BTWM69Q06C9A
+
+# 2:    ID             = spa_ssd
+      # SP             = spa
+      # Slot           = 0
+      # Name           = SP A Internal Disk
+      # Health state   = OK (5)
+      # Health details = "The component is operating normally. No action is required."
+      # Manufacturer   =
+      # Model          = Intel DC 3500 Series SSDs M.2
+      # Part number    = INTEL SSDSCKHB080G4M           118000039
+      # Serial number  = BTWM69P018ZA
+
+def inventory_emcunity_ssd(info):
+    for line in info:
+        if re.match(".*Name.*", line[0]):
+            item = line[1].lstrip()
+            yield item, None
+
+def check_emcunity_ssd(item, params, info):
+    i = 0
+    for line in info:
+        if info[i][1].lstrip() == item:
+            hstate = info[i+1][1].lstrip()
+            hdetail = info[i+2][1].lstrip()
+            model = info[i+4][1].lstrip()
+        i += 1
+    return parse_emcstate(hstate), "%s, %s, Model: %s" % (hstate, hdetail, model)
+
+check_info["emcunity_ssd"] = {
+    'check_function'         :    check_emcunity_ssd,
+    'inventory_function'     :    inventory_emcunity_ssd,
+    'service_description'    :    'HW %s SSD',
+    'includes'               :    [ 'emcunity.include' ],
+}

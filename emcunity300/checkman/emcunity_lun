@@ -1,0 +1,26 @@
+title: EMC Unity Storage: Status LUN
+agents: emcunity
+catalog: os/storage/emc
+license: GPL
+distribution: check_mk
+description:
+ Reports the usage, trend and status of a LUN in an EMC Unity storage system.
+
+ The check returns {OK}, {WARN}, or {CRIT} depending on the filesystem levels set in the WATO rule {Filesystems (used space and growth)}.
+
+ The information is retrieved by the special agent agent_emcunity which uses
+ EMC's command line tool uemcli.
+
+item:
+ Generated with the "Name" value of the LUN in the agent output.
+ E.g. "MYLUN"
+
+perfdata:
+ size, growth, trend, used space and levels
+
+inventory:
+ Automatically configures one check for every LUN listed in the agent output.
+
+[parameters]
+params(dict): The check uses dictionary based parameters like specified for the
+ {df} check.
