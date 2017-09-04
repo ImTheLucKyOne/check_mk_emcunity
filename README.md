@@ -7,6 +7,9 @@ Check_MK Extensions for Dell EMC Unity Storages
 # About:
 If you are searching for check_mk plugins to monitor your Dell EMC Unity Storage System, this project is one place to look for.
 
+# Disclaimer:
+I am not a professional programmer and I know there are some design and coding flaws in my python code. I try to keep track of what to do/change here https://github.com/ImTheLucKyOne/check_mk_emcunity/issues. Please let me know if you have useful hints regarding changes or fixes.
+
 # Prerequisites / Installation:
 The special agent makes use of the Dell CLI tool "uemcli" (documentation: https://www.emc.com/collateral/TechnicalDocument/docu69330.pdf). You can download it from the dell support website ("https://support.emc.com").
 1) It has to be installed on your check_mk server.
