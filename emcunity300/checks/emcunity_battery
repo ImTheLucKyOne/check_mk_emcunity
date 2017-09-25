@@ -50,18 +50,23 @@
 # Serial number  = ACPJ5163500516
 
 def inventory_emcunity_battery(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = None
+    bats = emcunity_parse_info(info, keys)
+    for bat in bats:        
+        item = bats[bat]["Name"]
+        yield item, None
 
 def check_emcunity_battery(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            hstate = info[i+1][1].lstrip()
-            hdetail = info[i+2][1].lstrip()
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details" ]
+    bats = emcunity_parse_info(info, keys)
+    for bat in bats:        
+        name = bats[bat]["Name"]
+        if name == item:
+            hstate = bats[bat]["Health state"]
+            hdetail = bats[bat]["Health details"]
     return parse_emcstate(hstate), "%s, %s" % (hstate, hdetail)
 
 check_info["emcunity_battery"] = {

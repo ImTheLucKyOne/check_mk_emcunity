@@ -70,31 +70,30 @@
       # Effective maximum KBPS     = N/A
 
 def inventory_emcunity_lun(info):
-    for line in info:
-        if re.match("Name", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = None
+    luns = emcunity_parse_info(info, keys)
+    for lun in luns:
+        item = luns[lun]["Name"]
+        yield item, None
 
 def check_emcunity_lun(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            # get bytes from agent output
-            size_B = re.search("\d+", info[i+11][1].lstrip()).group(0)
-            used_B = re.search("\d+", info[i+18][1].lstrip()).group(0)
-
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Size", "Current allocation" ]
+    luns = emcunity_parse_info(info, keys)
+    for lun in luns:
+        name = luns[lun]["Name"]
+        if name == item:
+            size_B = re.search("\d+", luns[lun]["Size"].lstrip()).group(0)
+            used_B = re.search("\d+", luns[lun]["Current allocation"].lstrip()).group(0)
             used_mb = int(used_B) / 1024.0 / 1024.0
             size_mb = int(size_B) / 1024.0 / 1024.0
             avail_mb = size_mb - used_mb
-
-            # get health details
-            hstate = info[i+9][1].lstrip()
-            hdetail = info[i+10][1].lstrip()
-
-            # get status, infotext and perfdata
+            hstate = luns[lun]["Health state"]
+            hdetail = luns[lun]["Health details"]
             status, infotext, perfdata = df_check_filesystem_single(g_hostname,	item, size_mb, avail_mb, 0, None, None, params)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
-        i += 1
     return status, infotext, perfdata
 
 check_info["emcunity_lun"] = {

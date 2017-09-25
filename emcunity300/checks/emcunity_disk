@@ -79,26 +79,27 @@
 # WWN                = 06:00:00:00:05:00:00:00:04:01:00:00:00:00:00:
 
 def inventory_emcunity_disk(info):
-    i = 0
-    for line in info:
-        # search for name as item
-        if re.match("Name", info[i][0]):
-            # just return something if slot not empty (check if serial nr entry is not empty)
-            if info[i+17][1].lstrip() != "":
-                item = re.search("\d+", line[1].lstrip()).group(0)
-                yield item, None
-        i += 1
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = [ "Slot", "Serial number" ]
+    disks = emcunity_parse_info(info, keys)
+    for disk in disks:
+        if disks[disk]["Serial number"] != "":
+            item = disks[disk]["Slot"]
+            yield item, None
 
 def check_emcunity_disk(item, params, info):
-    i = 0
-    for line in info:
-        if re.match("Name", info[i][0]) and re.search("\d+", info[i][1].lstrip()).group(0) == item:
-            hstate = info[i+1][1].lstrip()
-            hdetail = info[i+2][1].lstrip()
-            hddtype = info[i+3][1].lstrip()
-            model = info[i+14][1].lstrip()
-            pool = info[i+10][1].lstrip()       
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Slot", "Health state", "Health details", "Type", "Model", "Pool" ]
+    disks = emcunity_parse_info(info, keys)
+    for disk in disks:
+        name = disks[disk]["Slot"]
+        if name == item:
+            hstate = disks[disk]["Health state"]
+            hdetail = disks[disk]["Health details"]
+            model = disks[disk]["Model"]
+            hddtype = disks[disk]["Type"]
+            pool = disks[disk]["Pool"]
     return parse_emcstate(hstate), "%s, %s, Model: %s, Type: %s, Pool: %s" % (hstate, hdetail, model, hddtype, pool)
 
 check_info["emcunity_disk"] = {

@@ -50,24 +50,25 @@
       # Serial number  = 80AD01163881527BE1
 
 def inventory_emcunity_memory(info):
-    i = 0
-    for line in info:
-        # search for name as item
-        if re.match(".*Name.*", info[i][0]):
-            # just return if slot not empty (check if serial nr entry is not empty)
-            if info[i+6][1].lstrip() != "":
-                item = line[1].lstrip()
-                yield item, None
-        i += 1
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = [ "Name", "Serial number" ]
+    mems = emcunity_parse_info(info, keys)
+    for mem in mems:
+        if mems[mem]["Serial number"] != "":
+            item = mems[mem]["Name"]
+            yield item, None
 
 def check_emcunity_memory(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            hstate = info[i+1][1].lstrip()
-            hdetail = info[i+2][1].lstrip()
-            model = info[i+4][1].lstrip()
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Model" ]
+    mems = emcunity_parse_info(info, keys)
+    for mem in mems:
+        name = mems[mem]["Name"]
+        if name == item:
+            hstate = mems[mem]["Health state"]
+            hdetail = mems[mem]["Health details"]
+            model = mems[mem]["Model"]
     return parse_emcstate(hstate), "%s, %s, Model: %s" % (hstate, hdetail, model)
 
 check_info["emcunity_memory"] = {

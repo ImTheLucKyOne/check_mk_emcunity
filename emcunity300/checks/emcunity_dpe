@@ -43,20 +43,25 @@
       # Temperature (Rolling Average) = 66° F (19° C)
 
 def inventory_emcunity_dpe(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = None
+    dpes = emcunity_parse_info(info, keys)
+    for dpe in dpes:        
+        item = dpes[dpe]["Name"]
+        yield item, None
 
 def check_emcunity_dpe(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            hstate = info[i+1][1].lstrip()
-            hdetail = info[i+2][1].lstrip()
-            pwr = info[i+7][1].lstrip()
-            temp = info[i+9][1].lstrip()
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Power (Present)", "Temperature (Present)" ]
+    dpes = emcunity_parse_info(info, keys)
+    for dpe in dpes:
+        name = dpes[dpe]["Name"]
+        if name == item:
+            hstate = dpes[dpe]["Health state"]
+            hdetail = dpes[dpe]["Health details"]
+            pwr = dpes[dpe]["Power (Present)"]
+            temp = dpes[dpe]["Temperature (Present)"]
     return parse_emcstate(hstate), "%s, %s, Power: %s, Temp: %s" % (hstate, hdetail, pwr, temp)
 
 check_info["emcunity_dpe"] = {

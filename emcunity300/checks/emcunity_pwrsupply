@@ -53,22 +53,25 @@
       # Serial number  = AC7N9163702302
 
 def inventory_emcunity_pwrsupply(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            tokens = re.split(" ", line[1].lstrip())
-            item = "PSU " + tokens[3]
-            yield item, None
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = None
+    psus = emcunity_parse_info(info, keys)
+    for psu in psus:
+        tokens = re.split(" ", psus[psu]["Name"])
+        item = "PSU " + tokens[3]
+        yield item, None
 
 def check_emcunity_pwrsupply(item, params, info):
-    i = 0
-    for line in info:
-        tokens = re.split(" ", info[i][1].lstrip())
-        if len(tokens) >= 4:
-            line = "PSU " + tokens[3]
-            if line == item:
-                hstate = info[i+1][1].lstrip()
-                hdetail = info[i+2][1].lstrip()
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details" ]
+    psus = emcunity_parse_info(info, keys)
+    for psu in psus:
+        tokens = re.split(" ", psus[psu]["Name"])
+        name = "PSU " + tokens[3]
+        if name == item:
+            hstate = psus[psu]["Health state"]
+            hdetail = psus[psu]["Health details"]
     return parse_emcstate(hstate), "%s, %s" % (hstate, hdetail)
 
 check_info["emcunity_pwrsupply"] = {

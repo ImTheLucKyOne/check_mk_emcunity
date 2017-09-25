@@ -50,19 +50,34 @@
       # Serial number  = BTWM69P018ZA
 
 def inventory_emcunity_ssd(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+#    for line in info:
+#        if re.match(".*Name.*", line[0]):
+#            item = line[1].lstrip()
+#            yield item, None
+# "Name" is automatically added
+    keys = None
+    ssds = emcunity_parse_info(info, keys)
+    for ssd in ssds:
+        item = ssds[ssd]["Name"]
+        yield item, None
 
 def check_emcunity_ssd(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            hstate = info[i+1][1].lstrip()
-            hdetail = info[i+2][1].lstrip()
-            model = info[i+4][1].lstrip()
-        i += 1
+#    i = 0
+#    for line in info:
+#        if info[i][1].lstrip() == item:
+#            hstate = info[i+1][1].lstrip()
+#            hdetail = info[i+2][1].lstrip()
+#            model = info[i+4][1].lstrip()
+#        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Model" ]
+    ssds = emcunity_parse_info(info, keys)
+    for ssd in ssds:
+        name = ssds[ssd]["Name"]
+        if name == item:
+            hstate = ssds[ssd]["Health state"]
+            hdetail = ssds[ssd]["Health details"]
+            model = ssds[ssd]["Model"]
     return parse_emcstate(hstate), "%s, %s, Model: %s" % (hstate, hdetail, model)
 
 check_info["emcunity_ssd"] = {

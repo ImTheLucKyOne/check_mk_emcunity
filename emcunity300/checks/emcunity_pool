@@ -59,37 +59,42 @@
       # Compression Ratio                                 = 1:1
 
 def inventory_emcunity_pool(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+# parse info, no key needed for inventory
+# "Name" is automatically added
+    keys = None
+    pools = emcunity_parse_info(info, keys)
+    for pool in pools:
+        item = pools[pool]["Name"]
+        yield item, None
 
 def check_emcunity_pool(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Total space", "Current allocation", "Subscription", "Remaining space" ]
+    pools = emcunity_parse_info(info, keys)
+    for pool in pools:
+        name = pools[pool]["Name"]
+        if name == item:
             # get bytes from agent output
-            size_B = re.search("\d+", info[i+2][1].lstrip()).group(0)
-            used_B = re.search("\d+", info[i+3][1].lstrip()).group(0)
-            avail_B = re.search("\d+", info[i+4][1].lstrip()).group(0)
-            sub_B = re.search("\d+", info[i+5][1].lstrip()).group(0)
+            size_B = re.search("\d+", pools[pool]["Total space"].lstrip()).group(0)
+            used_B = re.search("\d+", pools[pool]["Current allocation"].lstrip()).group(0)
+            avail_B = re.search("\d+", pools[pool]["Remaining space"].lstrip()).group(0)
+            sub_B = re.search("\d+", pools[pool]["Subscription"].lstrip()).group(0)
 
-            avail_mb = int(avail_B) / 1024.0 / 1024.0
             used_mb = int(used_B) / 1024.0 / 1024.0
             size_mb = int(size_B) / 1024.0 / 1024.0
+            avail_mb = int(avail_B) / 1024.0 / 1024.0
             sub_mb = int(sub_B) / 1024.0 / 1024.0
             sub_percent = (sub_mb / size_mb) * 100
 
             # get health details
-            hstate = info[i+14][1].lstrip()
-            hdetail = info[i+15][1].lstrip()
-
+            hstate = pools[pool]["Health state"]
+            hdetail = pools[pool]["Health details"]
+            
             # get status, infotext and perfdata
-            status, infotext, perfdata = df_check_filesystem_single(g_hostname,	item, size_mb, avail_mb, 0, None, None, params)
+            status, infotext, perfdata = df_check_filesystem_single(g_hostname, item, size_mb, avail_mb, 0, None, None, params)
             perfdata += [ ('subscription', str(sub_mb) + 'MB'), ]
             infotext += ", subscription: %.lf%%" % (sub_percent)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
-        i += 1
     return status, infotext, perfdata
 
 check_info["emcunity_pool"] = {

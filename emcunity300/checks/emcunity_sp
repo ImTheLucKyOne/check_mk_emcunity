@@ -54,20 +54,24 @@
       # Temperature    =
 
 def inventory_emcunity_sp(info):
-    for line in info:
-        if re.match(".*Name.*", line[0]):
-            item = line[1].lstrip()
-            yield item, None
+# "Name" is automatically added
+    keys = None
+    sps = emcunity_parse_info(info, keys)
+    for sp in sps:
+        item = sps[sp]["Name"]
+        yield item, None
 
 def check_emcunity_sp(item, params, info):
-    i = 0
-    for line in info:
-        if info[i][1].lstrip() == item:
-            mode = info[i+1][1].lstrip()
-            hstate = info[i+2][1].lstrip()
-            hdetail = info[i+3][1].lstrip()
-            memsize = info[i+7][1].lstrip()
-        i += 1
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "Health state", "Health details", "Mode", "Memory size" ]
+    sps = emcunity_parse_info(info, keys)
+    for sp in sps:
+        name = sps[sp]["Name"]
+        if name == item:
+            hstate = sps[sp]["Health state"]
+            hdetail = sps[sp]["Health details"]
+            mode = sps[sp]["Mode"]
+            memsize = sps[sp]["Memory size"]
     return parse_emcstate(hstate), "%s, %s, Mode: %s, Memory Size: %s" % (hstate, hdetail, mode, memsize)
 
 check_info["emcunity_sp"] = {

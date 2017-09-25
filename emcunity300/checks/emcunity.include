@@ -31,21 +31,39 @@
 def parse_emcstate(hstate):
     state = re.search('\d+', hstate)
     if state.group(0) == "0":
-	code = 3
+        code = 3
     elif state.group(0) == "5":
-	code = 0
+        code = 0
     elif state.group(0) == "7":
-	code = 1
+        code = 1
     elif state.group(0) == "10":
-	code = 1
+        code = 1
     elif state.group(0) == "15":
-	code = 1
+        code = 1
     elif state.group(0) == "20":
-	code = 2
+        code = 2
     elif state.group(0) == "25":
-	code = 2
+        code = 2
     elif state.group(0) == "30":
-	code = 2
+        code = 2
     else:
-	code = 3
+        code = 3
     return code
+
+# parse agent output into python dictionaries
+# just fill keys, the check plugin called this function with
+
+def emcunity_parse_info(info, keys):
+    parsed = {}
+    if not keys:
+        keys = [ "Name" ]
+    for line in info:
+        if re.search(":.*ID.*", line[0]):
+            entry = line[1]
+            values = {}
+            parsed[entry] = values
+        else:
+            for key in keys:
+                if line[0].strip() == key:
+                    values[key] = line[1].lstrip()
+    return parsed
