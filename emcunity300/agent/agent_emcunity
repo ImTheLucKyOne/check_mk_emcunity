@@ -48,9 +48,10 @@ checks = {
     "disk"       : {"cmd_option" : "/env/disk show -detail"},
     "ssd"        : {"cmd_option" : "/env/ssd show -detail"},
     "general"    : {"cmd_option" : "/sys/general show -detail"},
-    "pool"      : {"cmd_option" : "/stor/config/pool show -detail"},
-    "lun"       : {"cmd_option" : "/stor/prov/luns/lun show -detail"},
+    "pool"       : {"cmd_option" : "/stor/config/pool show -detail"},
+    "lun"        : {"cmd_option" : "/stor/prov/luns/lun show -detail"},
     "vmfs"       : {"cmd_option" : "/stor/prov/vmware/vmfs show -detail"},
+    "fs"         : {"cmd_option" : "/stor/prov/fs show -detail"},
 }
 
 for check in checks.keys():
