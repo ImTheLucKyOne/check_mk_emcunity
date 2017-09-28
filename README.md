@@ -22,5 +22,5 @@ The special agent makes use of the Dell CLI tool "uemcli" (documentation: https:
 - special agent "agent_emcunity"
 - check plugins
 - man pages
-- pnp-templates for lun, pool, vmfs
-- metrics and perfometer for lun, pool, vmfs
+- pnp-templates for lun, pool, vmfs, fs
+- metrics and perfometer for lun, pool, vmfs, fs
