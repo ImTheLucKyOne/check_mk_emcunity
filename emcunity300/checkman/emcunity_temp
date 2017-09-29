@@ -1,0 +1,22 @@
+title: EMC Unity Storage: Zone Temperatures
+agents: emcunity
+catalog: hw/storagehw/emc
+license: GPL
+distribution: check_mk
+description:
+ Reports the temperature metrics of the EMC Unity Storage.
+
+ The check returns {OK}, {WARN}, or {CRIT} depending on the temperature levels set in the WATO rule {Temperature}.
+
+ The information is retrieved by the special agent agent_emcunity which uses
+ EMC's command line tool uemcli.
+
+item:
+ Generated with the zone of the metric path in the agent output.
+ E.g. "Temperature spa"
+
+perfdata:
+ temperature, min, max, average
+
+inventory:
+ Automatically configures one check for every temperature entry listed in the agent output.
