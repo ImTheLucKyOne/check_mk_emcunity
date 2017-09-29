@@ -1,28 +1,128 @@
-title: EMC Unity Storage: Status File Systems
-agents: emcunity
-catalog: os/storage/emc
-license: GPL
-distribution: check_mk
-description:
- Reports the usage, allocation, trend and status of a NAS filesystem in an EMC Unity storage system.
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
 
- The check returns {OK}, {WARN}, or {CRIT} depending on the filesystem levels set in the WATO rule {Filesystems (used space and growth)} and the emc state is "OK (5)".
+# Written/Edited by Philipp Näther, Marco Lenhardt
+# philipp.naether@stadt-meissen.de
+# marco.lenhardt@ontec.at
 
- The check returns {WARN} or {CRIT} if the emc helath state of the filesystems is not "OK (5)".
+#1:    ID                         = res_5
+#      Name                       = NAS_Prod01
+#      Description                = 
+#      Health state               = OK (5)
+#      Health details             = "The component is operating normally. No action is required."
+#      File system                = fs_5
+#      Server                     = nas_2
+#      Storage pool ID            = pool_1
+#      Storage pool               = Prod_Pool
+#      Format                     = UFS64
+#      Protocol                   = nfs
+#      Access policy              = unix
+#      Folder rename policy       = forbiddenSmb
+#      Locking policy             = mandatory
+#      Size                       = 5497558138880 (5.0T)
+#      Size used                  = 2762093502464 (2.5T)
+#      Maximum size               = 70368744177664 (64.0T)
+#      Thin provisioning enabled  = yes
+#      Current allocation         = 4171486986240 (3.7T)
+#      Minimum size allocated     = 3221225472 (3.0G)
+#      Protection size used       = 0
+#      Snapshot count             = 0
+#      Protection schedule        = 
+#      Protection schedule paused = no
+#      CIFS synchronous write     = no
+#      CIFS oplocks               = yes
+#      CIFS notify on write       = no
+#      CIFS notify on access      = no
+#      CIFS directory depth       = 512
+#      Replication destination    = no
+#      Migration destination      = no
+#      FAST VP policy             = Start high then auto-tier
+#      FAST VP distribution       = Extreme Performance: 20%, Performance: 80%, Capacity: 0%
+#      Creation time              = 2017-07-11 12:35:59
+#      Last modified time         = 2017-07-11 12:35:59
+#      Pool full policy           = Fail Writes
+#      Event publishing protocols = 
 
- The information is retrieved by the special agent agent_emcunity which uses
- EMC's command line tool uemcli.
 
-item:
- Generated with the "Name" value of the filesystem in the agent output.
- E.g. "MYNas"
+def inventory_emcunity_fs(info):
+    for line in info:
+        if re.match(".*Name.*", line[0]):
+            item = line[1].lstrip()
+            yield item, None
 
-perfdata:
- size, growth, trend, used space and levels, allocation
+def check_emcunity_fs(item, params, info):
+    keys = [ "Name", "Health state", "Health details", "Size used", "Size", "Current allocation", "Protocol", "Storage pool" ]
+    filesystems = emcunity_parse_info(info, keys)
+    for fs in filesystems:
+        name = filesystems[fs]["Name"]
+        if name == item:
+            # get bytes from agent output
+            # Size
+            size_B = re.search("\d+", filesystems[fs]["Size"].lstrip()).group(0)
+            # Size used
+            used_B = re.search("\d+", filesystems[fs]["Size used"].lstrip()).group(0)
+            # Current allocation
+            allocated_B = re.search("\d+", filesystems[fs]["Current allocation"].lstrip()).group(0)
+            avail_B = int(size_B) - int(used_B)
 
-inventory:
- Automatically configures one check for every filesystem listed in the agent output.
+            protocol = filesystems[fs]["Protocol"]
+            pool = filesystems[fs]["Storage pool"]
 
-[parameters]
-params(dict): The check uses dictionary based parameters like specified for the
- {df} check.
+            avail_mb = int(avail_B) / 1024.0 / 1024.0
+            allocated_mb = int(allocated_B) / 1024.0 / 1024.0
+            used_mb = int(used_B) / 1024.0 / 1024.0
+            size_mb = int(size_B) / 1024.0 / 1024.0
+            allocated_percent = (allocated_mb / size_mb) * 100
+
+            # get health details
+            hstate = filesystems[fs]["Health state"]
+            hdetail = filesystems[fs]["Health details"]
+
+            # get status, infotext and perfdata
+            status, infotext, perfdata = df_check_filesystem_single(g_hostname, item, size_mb, avail_mb, 0, None, None, params)
+            perfdata += [ ('allocated', str(allocated_mb) + 'MB'), ]
+            infotext += ", allocated: %.lf%%" % (allocated_percent)
+            infotext += ", Pool: %s" % (pool)
+            infotext += ", Protocol: %s" % (protocol)
+            infotext += ", EMC State: %s %s" % (hstate, hdetail)
+
+            # ignore the levels and replace the status
+            # if the unity itself reports warning or errors for the filesystem
+            hstate_code = parse_emcstate(hstate)
+            if hstate_code > 0:
+                status = hstate_code
+
+    return status, infotext, perfdata
+
+check_info["emcunity_fs"] = {
+    'check_function'             :    check_emcunity_fs,
+    'inventory_function'         :    inventory_emcunity_fs,
+    'has_perfdata'               :    True,
+    'service_description'        :    'File System %s',
+    'includes'                   :    [ 'emcunity.include', 'df.include' ],
+    'group'                      :    "filesystem",
+    'default_levels_variable'    :    "filesystem_default_levels",
+}
