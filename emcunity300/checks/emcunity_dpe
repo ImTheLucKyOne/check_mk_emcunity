@@ -53,16 +53,15 @@ def inventory_emcunity_dpe(info):
 
 def check_emcunity_dpe(item, params, info):
 # parse info, just get data we want for this check by defining the keys
-    keys = [ "Name", "Health state", "Health details", "Power (Present)", "Temperature (Present)" ]
+    keys = [ "Name", "Health state", "Health details", "Power (Present)" ]
     dpes = emcunity_parse_info(info, keys)
     for dpe in dpes:
         name = dpes[dpe]["Name"]
         if name == item:
             hstate = dpes[dpe]["Health state"]
             hdetail = dpes[dpe]["Health details"]
-            pwr = dpes[dpe]["Power (Present)"]
-            temp = dpes[dpe]["Temperature (Present)"]
-    return parse_emcstate(hstate), "%s, %s, Power: %s, Temp: %s" % (hstate, hdetail, pwr, temp)
+            pwr = dpes[dpe]["Power (Present)"]            
+    return parse_emcstate(hstate), "%s, %s, Power: %s" % (hstate, hdetail, pwr, temp)
 
 check_info["emcunity_dpe"] = {
     'check_function'         :    check_emcunity_dpe,
