@@ -54,8 +54,20 @@ checks = {
     "fs"         : {"cmd_option" : "/stor/prov/fs show -detail"},
 }
 
+metrics = {
+    "temp"    : {"cmd_option" : [ "/metrics/value/rt -path sp.*.platform.storageProcessorTemperature show -interval 5 -count 1 -output csv" ]},
+}
+
 for check in checks.keys():
     print '<<<emcunity_%s:sep(61)>>>' % (check)
     execline = basecmd + checks[check]["cmd_option"]
     for line in os.popen(execline).readlines():
         print line,
+
+for metric in metrics.keys():
+    print '<<<emcunity_%s:sep(44)>>>' % (metric)
+    for path in metrics[metric]["cmd_option"]:
+        execline = basecmd + path
+        for line in os.popen(execline).readlines()[1:]:
+            if line.strip() != '':
+                print line,
