@@ -61,7 +61,7 @@ def check_emcunity_dpe(item, params, info):
             hstate = dpes[dpe]["Health state"]
             hdetail = dpes[dpe]["Health details"]
             pwr = dpes[dpe]["Power (Present)"]            
-    return parse_emcstate(hstate), "%s, %s, Power: %s" % (hstate, hdetail, pwr, temp)
+    return parse_emcstate(hstate), "%s, %s, Power: %s" % (hstate, hdetail, pwr)
 
 check_info["emcunity_dpe"] = {
     'check_function'         :    check_emcunity_dpe,
