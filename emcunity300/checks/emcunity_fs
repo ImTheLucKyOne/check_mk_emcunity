@@ -109,10 +109,9 @@ def check_emcunity_fs(item, params, info):
             infotext += ", Protocol: %s" % (protocol)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
 
-            # ignore the levels and replace the status
-            # if the unity itself reports warning or errors for the filesystem
+            # use unity status if higher as filestsyem levels
             hstate_code = parse_emcstate(hstate)
-            if hstate_code > 0:
+            if hstate_code > status:
                 status = hstate_code
 
     return status, infotext, perfdata
