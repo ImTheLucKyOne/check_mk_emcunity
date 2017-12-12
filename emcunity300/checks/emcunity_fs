@@ -109,9 +109,13 @@ def check_emcunity_fs(item, params, info):
             infotext += ", Protocol: %s" % (protocol)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
 
-            # use unity status if higher as filestsyem levels
+            # ignore the levels and replace the status
+            # if the unity itself reports  errors for the filesystem
+            # the unity status will go to OK_BUT(7) if the filesytem
+            # reaches 75%; this threshold is not configurable and useless
+            # with bigger filesystems (warning on 12TB filesystem with 9.01TB usage)
             hstate_code = parse_emcstate(hstate)
-            if hstate_code > status:
+            if hstate_code > 1 and hstate_code > status:
                 status = hstate_code
 
     return status, infotext, perfdata
