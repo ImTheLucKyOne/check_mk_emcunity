@@ -4,18 +4,68 @@
 # Written/Edited by Philipp Näther
 # philipp.naether@stadt-meissen.de
 
-import os, sys, re, subprocess
+import getopt, os, sys, re, subprocess
+
+def usage():
+    sys.stderr.write("""Check_MK emcunity Agent
+
+USAGE: agent_emcunity [OPTIONS] HOST
+       agent_emcunity -h
+
+ARGUMENTS:
+   HOST                               Hostname or IP address of the target SP
+
+OPTIONS:
+  -h, --help                          Show this help message and exit
+  -u USER, --user USER                Set the admin user
+  -p PASSWORD, --password PASSWORD    Set the password for admin user
+  --debug                             Let python exeptions come through
+""")
+
+short_options = 'h:u:p:'
+long_options = [ 'help', 'user=', 'password=', 'debug' ]
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], short_options, long_options)
+    print opts
+    print args
+except getopt.GetoptError, err:
+    sys.stderr.write("%s\n" % err)
+    sys.exit(1)
+
+opt_debug = False
+
+host = None
+user = None
+pw = None
+opt_debug = False
+
+for o,a in opts:
+    if o in [ '--debug' ]:
+        opt_debug = True
+    elif o in [ '-h', '--help' ]:
+        usage()
+        sys.exit(0)
+    elif o in [ '-u', 'user=' ]:
+        user = a
+    elif o in [ '-p', 'password' ]:
+        pw = a
+
+if len(args) == 1:
+    host = args[0]
+elif not args:
+    sys.stderr.write("ERROR: No Host given.\n")
+    sys.exit(1)
+else:
+    sys.stderr.write("ERROR: Please specify exactly one host.\n")
+    sys.exit(1)
+
+if not user or not pw:
+    sys.stderr.write("ERROR: Credentials are missing.\n")
+    sys.exit(1)
 
 cmdpath = "/usr/bin/uemcli"
 cmd = "uemcli"
-# Check args
-if len(sys.argv) < 4:
-    print "ERROR: Missing argument, we need HOST USER PASSWORD in given order"
-    sys.exit(1)
-else:
-    host = sys.argv[1]
-    user = sys.argv[2]
-    pw = sys.argv[3]
 
 # Test if uemcli command is available
 if os.path.isfile(cmdpath) == False and os.access(cmdpath, os.X_OK) == False:
