@@ -16,7 +16,7 @@ The special agent makes use of the Dell CLI tool "uemcli" (documentation: https:
 3) The user running the agent (the CMK/OMD user) needs to connect to your EMC Unity system at least once over CLI to confirm the certificate and cache that information into its home directory. See the EMC documentation for details about how to connect to your Unity over CLI.
 4) Download and install the emcunity300.mkp Check_MK Package (http://mathias-kettner.de/checkmk_packaging.html)
 5) Create a new WATO rule "Datasource Programs - Check state of EMC Unity 300 storage systems"
-6) Enter the command line to be executed (e.g.: /usr/local/check_mk/agents/special/agent_emcunity IP user password)
+6) Enter an admin user and the password for this user to connect to the EMC Unity
 
 # emcunity300.mkp content:
 - special agent "agent_emcunity"
