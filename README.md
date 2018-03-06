@@ -1,7 +1,7 @@
 # check_mk_emcunity
 Check_MK Extensions for Dell EMC Unity Storages
 
-!!! Tested with following unity systems: Unity 300, Unity 450F (thanks to christian.marscheck@comlineag.de for confirming this)  !!!
+!!! Tested with following unity systems: Unity 300, Unity 450F (thanks to Christian M. for confirming this)  !!!
 
 # About:
 If you are searching for check_mk plugins to monitor your Dell EMC Unity Storage System, this project is one place to look for.
