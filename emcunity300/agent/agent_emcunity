@@ -27,8 +27,8 @@ long_options = [ 'help', 'user=', 'password=', 'debug' ]
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], short_options, long_options)
-    print opts
-    print args
+#  print opts
+#  print args
 except getopt.GetoptError, err:
     sys.stderr.write("%s\n" % err)
     sys.exit(1)
