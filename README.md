@@ -24,3 +24,9 @@ The special agent makes use of the Dell CLI tool "uemcli" (documentation: https:
 - man pages
 - pnp-templates for lun, pool, vmfs, fs
 - metrics and perfometer for lun, pool, vmfs, fs
+
+# Credits:
+Special thanks to the users who are helping me to improve this extension are going to:
+- Marco Lenhardt
+- goam03
+- Christian M.
