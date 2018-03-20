@@ -32,7 +32,6 @@ def agent_emcunity_arguments(params, hostname, ipaddress):
         args += " -p " + quote_shell_string(params["password"])
 
     args += " " + quote_shell_string(ipaddress)
-    #print args
     return args
 
 special_agent_info['emcunity'] = agent_emcunity_arguments
