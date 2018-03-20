@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- encoding: utf-8; py-indent-offset: 4 -*-
 # +------------------------------------------------------------------+
 # |             ____ _               _        __  __ _  __           |
@@ -32,7 +32,7 @@ def agent_emcunity_arguments(params, hostname, ipaddress):
         args += " -p " + quote_shell_string(params["password"])
 
     args += " " + quote_shell_string(ipaddress)
-    print args
+    #print args
     return args
 
 special_agent_info['emcunity'] = agent_emcunity_arguments
