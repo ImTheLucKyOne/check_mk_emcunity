@@ -1,0 +1,22 @@
+title: EMC Unity Storage: Status FibreChannel
+agents: emcunity
+catalog: hw/storagehw/emc
+license: GPL
+distribution: check_mk
+description:
+ Reports the status of a FC port in an EMC Unity storage system.
+
+ The check returns {OK}, {WARN}, or {CRIT} depending on the health state reported by the special agent.
+
+ The information is retrieved by the special agent agent_emcunity which uses
+ EMC's command line tool uemcli.
+
+item:
+ Generated with the "Name" value of the port in the agent output.
+ E.g. "FC Port A3"
+
+perfdata:
+ None
+
+inventory:
+ Automatically configures one check for every fan listed in the agent output.
