@@ -64,7 +64,7 @@ def inventory_emcunity_fc(info):
     fcs = emcunity_parse_info(info, keys)
     for fc in fcs:
         tokens = re.split(" ", fcs[fc]["Name"])
-        item = "FC Port %s%s" % (tokens[1], tokens[7])
+        item = "FC %s%s" % (tokens[1], tokens[-1])
         yield item, None
 
 def check_emcunity_fc(item, params, info):
@@ -73,7 +73,7 @@ def check_emcunity_fc(item, params, info):
     fcs = emcunity_parse_info(info, keys)
     for fc in fcs:
         tokens = re.split(" ", fcs[fc]["Name"])
-        name = "FC Port %s%s" % (tokens[1], tokens[7])
+        name = "FC %s%s" % (tokens[1], tokens[-1])
         if name == item:
             hstate = fcs[fc]["Health state"]
             hdetail = fcs[fc]["Health details"]
@@ -83,6 +83,6 @@ def check_emcunity_fc(item, params, info):
 check_info["emcunity_fc"] = {
     'check_function'         :    check_emcunity_fc,
     'inventory_function'     :    inventory_emcunity_fc,
-    'service_description'    :    'I/O Module %s',
+    'service_description'    :    'Interface %s',
     'includes'               :    [ 'emcunity.include' ],
 }
