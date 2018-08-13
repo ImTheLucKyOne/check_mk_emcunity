@@ -94,7 +94,7 @@ def check_emcunity_vmfs(item, params, info):
             avail_mb = size_mb - used_mb
             hstate = vmfs[vmf]["Health state"]
             hdetail = vmfs[vmf]["Health details"]
-            status, infotext, perfdata = df_check_filesystem_single(g_hostname, item, size_mb, avail_mb, 0, None, None, params)
+            status, infotext, perfdata = df_check_filesystem_single(item, size_mb, avail_mb, 0, None, None, params)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
     return status, infotext, perfdata
 
@@ -103,7 +103,7 @@ check_info["emcunity_vmfs"] = {
     'inventory_function'         :    inventory_emcunity_vmfs,
     'has_perfdata'               :    True,
     'service_description'        :    'VMFS %s',
-    'includes'                   :    [ 'emcunity.include', 'df.include' ],
+    'includes'                   :    [ 'emcunity.include', 'df.include', 'size_trend.include' ],
     'group'                      :    "filesystem",
     'default_levels_variable'    :    "filesystem_default_levels",
 }
