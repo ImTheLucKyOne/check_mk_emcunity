@@ -30,4 +30,5 @@ Special thanks to the users who are helping me to improve this extension are goi
 - Marco Lenhardt
 - goam03
 - Christian M.
+- kazatelm
 - Marcel Werner
