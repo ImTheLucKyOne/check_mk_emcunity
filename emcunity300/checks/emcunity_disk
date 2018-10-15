@@ -81,19 +81,19 @@
 def inventory_emcunity_disk(info):
 # parse info, no key needed for inventory
 # "Name" is automatically added
-    keys = [ "Slot", "Serial number" ]
+    keys = [ "Name", "Serial number" ]
     disks = emcunity_parse_info(info, keys)
     for disk in disks:
         if disks[disk]["Serial number"] != "":
-            item = disks[disk]["Slot"]
+            item = disks[disk]["Name"]
             yield item, None
 
 def check_emcunity_disk(item, params, info):
 # parse info, just get data we want for this check by defining the keys
-    keys = [ "Slot", "Health state", "Health details", "Type", "Model", "Pool" ]
+    keys = [ "Name", "Health state", "Health details", "Type", "Model", "Pool" ]
     disks = emcunity_parse_info(info, keys)
     for disk in disks:
-        name = disks[disk]["Slot"]
+        name = disks[disk]["Name"]
         if name == item:
             hstate = disks[disk]["Health state"]
             hdetail = disks[disk]["Health details"]
