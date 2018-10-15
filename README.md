@@ -33,3 +33,4 @@ Special thanks to the users who are helping me to improve this extension are goi
 - goam03
 - Christian M.
 - Marcel Werner
+- kazatelm
