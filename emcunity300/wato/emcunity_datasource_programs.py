@@ -44,7 +44,7 @@ register_rule(group,
         ],
         optional_keys = False
     ),
-    title = _("Check state of EMC Unity 300 storage system"),
+    title = _("Check state of EMC Unity storage system"),
     help = _("This rule selects the Agent emcunity instead of the normal Check_MK Agent "
-             "which collects the data through the DELLs command line tool uemcli"),
+             "which collects the data through DELL's command line tool uemcli"),
     match = 'first')
