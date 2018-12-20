@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+# +------------------------------------------------------------------+
+# |             ____ _               _        __  __ _  __           |
+# |            / ___| |__   ___  ___| | __   |  \/  | |/ /           |
+# |           | |   | '_ \ / _ \/ __| |/ /   | |\/| | ' /            |
+# |           | |___| | | |  __/ (__|   <    | |  | | . \            |
+# |            \____|_| |_|\___|\___|_|\_\___|_|  |_|_|\_\           |
+# |                                                                  |
+# | Copyright Mathias Kettner 2014             mk@mathias-kettner.de |
+# +------------------------------------------------------------------+
+#
+# This file is part of Check_MK.
+# The official homepage is at http://mathias-kettner.de/check_mk.
+#
+# check_mk is free software;  you can redistribute it and/or modify it
+# under the  terms of the  GNU General Public License  as published by
+# the Free Software Foundation in version 2.  check_mk is  distributed
+# in the hope that it will be useful, but WITHOUT ANY WARRANTY;  with-
+# out even the implied warranty of  MERCHANTABILITY  or  FITNESS FOR A
+# PARTICULAR PURPOSE. See the  GNU General Public License for more de-
+# tails. You should have  received  a copy of the  GNU  General Public
+# License along with GNU Make; see the file  COPYING.  If  not,  write
+# to the Free Software Foundation, Inc., 51 Franklin St,  Fifth Floor,
+# Boston, MA 02110-1301 USA.
+
+# Written/Edited by Philipp Näther
+# philipp.naether@stadt-meissen.de
+
+# 1:    ID              = Host_4
+#       Name            = 192.168.5.151
+#       Description     =
+#       Tenant          =
+#       Type            = host
+#       Address         = 192.168.5.151,169.254.199.59
+#       Netmask         =
+#       OS type         = VMware ESXi 6.0.0
+#       Ignored address =
+#       Management type = VMware
+#       Accessible LUNs = sv_1
+#       Health state    = OK (5)
+#       Health details  = "The component is operating normally. No action is required."
+
+def inventory_emcunity_hostcons(info):
+# only 1 multiline service per host, so no iteraion over info is needed at inventory
+    item = "Host Connections"
+    yield item, None
+
+def check_emcunity_hostcons(item, params, info):
+# parse info, just get data we want for this check by defining the keys
+    keys = [ "Name", "OS type", "Health state", "Health details" ]
+    cons = emcunity_parse_info(info, keys)
+    multi = []
+    # we need something to get the overall worst state -> max(list)
+    states = []
+    for con in cons:
+        name = cons[con]["Name"]
+        os = cons[con]["OS type"]
+        hstate = cons[con]["Health state"]
+        states.append(hstate)
+        hdetail = cons[con]["Health details"]
+        multi.append("%s, %s, %s ,%s" % (name, os, hstate, hdetail))
+    infotext = "%s active connections, overall state: %s, check long output for details" % \
+    (len(cons), max(states))
+    infotext += "\n" + "\n".join(multi)
+    return parse_emcstate(max(states)), infotext
+
+check_info["emcunity_hostcons"] = {
+    'check_function'         :    check_emcunity_hostcons,
+    'inventory_function'     :    inventory_emcunity_hostcons,
+    'service_description'    :    '%s',
+    'includes'               :    [ 'emcunity.include' ],
+}
