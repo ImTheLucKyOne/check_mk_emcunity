@@ -124,6 +124,7 @@ checks = {
     "vmfs"       : {"cmd_option" : "/stor/prov/vmware/vmfs show -detail"},
     "fs"         : {"cmd_option" : "/stor/prov/fs show -detail"},
     "fc"         : {"cmd_option" : "/net/port/fc show -detail"},
+    "hostcons"       : {"cmd_option" : "/remote/host show -detail"},
 }
 
 metrics = {
