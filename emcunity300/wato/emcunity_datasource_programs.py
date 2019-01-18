@@ -29,18 +29,34 @@ register_rule(group,
     'special_agents:emcunity',
     Dictionary(
         elements = [
-            ( 'user',
-              TextAscii(
-                  title = _('Username'),
-                  allow_empty = False,
-              )
-            ),
-            ( 'password',
-              Password(
-                  title = _("Password"),
-                  allow_empty = False,
-              )
-            )
+#            ( 'user',
+#              TextAscii(
+#                  title = _("Username"),
+#                  allow_empty = False,
+#              )
+#            ),
+#            ( 'password',
+#              Password(
+#                  title = _("Password"),
+#                  allow_empty = False,
+#              )
+#            ),
+            ("login",
+                Alternative(
+                    help = _("Choose between user/password or lockbox login"),
+                    title = _("Authentication Method"),
+#                    style = "dropdown",
+                    elements = [
+                        Tuple(
+                            title = _("Use Following Credentials"),
+                            elements = [
+                                TextAscii(title = _("Username"), allow_empty = False),
+                                Password(title = _("Password"), allow_epmty = False),
+                            ]),
+                        FixedValue( False, title = _("Use Credentials From:"), totext="Lockbox"),
+                        ],
+                    default_value = False
+            )),
         ],
         optional_keys = False
     ),
