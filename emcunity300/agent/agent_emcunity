@@ -40,8 +40,8 @@ ARGUMENTS:
 
 OPTIONS:
   -h, --help                          Show this help message and exit
-  -u USER, --user USER                Set the admin user
-  -p PASSWORD, --password PASSWORD    Set the password for admin user
+  -u USER, --user=USER                Set the admin user
+  -p PASSWORD, --password=PASSWORD    Set the password for admin user
   --debug                             Let python exeptions come through
 """)
 
@@ -60,6 +60,7 @@ host = None
 user = None
 pw = None
 opt_debug = False
+lockbox = False
 
 for o,a in opts:
     if o in [ '--debug' ]:
@@ -67,9 +68,9 @@ for o,a in opts:
     elif o in [ '-h', '--help' ]:
         usage()
         sys.exit(0)
-    elif o in [ '-u', 'user=' ]:
+    elif o in [ '-u', '--user=' ]:
         user = a
-    elif o in [ '-p', 'password' ]:
+    elif o in [ '-p', '--password=' ]:
         pw = a
 
 if len(args) == 1:
@@ -81,9 +82,14 @@ else:
     sys.stderr.write("ERROR: Please specify exactly one host.\n")
     sys.exit(1)
 
+# if no credentials are submitted by cmk, try lockbox stored credentials
+if not user and not pw:
+    lockbox = True
+
 if not user or not pw:
-    sys.stderr.write("ERROR: Credentials are missing.\n")
-    sys.exit(1)
+    if lockbox == False:
+        sys.stderr.write("ERROR: Credentials are missing.\n")
+        sys.exit(1)
 
 cmdpath = "/usr/bin/uemcli"
 cmd = "uemcli"
@@ -93,13 +99,18 @@ if os.path.isfile(cmdpath) == False and os.access(cmdpath, os.X_OK) == False:
     print "ERROR: Executable uemcli does not exist or is not executable!"
     sys.exit(1)
 
-basecmd = "%s -noHeader -sslPolicy store -d %s -u %s -p %s " % (cmd, host, user, pw)
+# set base command line with user/password or lockbox login
+if lockbox == False:
+    basecmd = "%s -noHeader -sslPolicy store -d %s -u %s -p %s " % (cmd, host, user, pw)
+else:
+    basecmd = "%s -noHeader -sslPolicy store -d %s " % (cmd, host)
 
 # EMC Unity firmware version as Check_MK version
 execline = "%s /sys/soft/ver show" % (basecmd)
+emcversion = ""
 
 cmdout = [ line.strip() for line in os.popen(execline + " 2>&1").readlines() ]
-emcversion = cmdout
+
 for line in cmdout:
     tokens = re.split("\s+", line)
     if tokens[0] == "Version":
@@ -129,6 +140,7 @@ checks = {
 
 metrics = {
     "temp"    : {"cmd_option" : [ "/metrics/value/rt -path sp.*.platform.storageProcessorTemperature show -interval 5 -count 1 -output csv" ]},
+    "cpu"     : {"cmd_option" : [ "/metrics/value/rt -path sp.*.cpu.summary.utilization show -interval 5 -count 1 -output csv"]},
 }
 
 for check in checks.keys():
