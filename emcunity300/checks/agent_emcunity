@@ -26,10 +26,10 @@
 
 def agent_emcunity_arguments(params, hostname, ipaddress):
     args = ''
-    if params["user"] != "":
-        args += " -u " + quote_shell_string(params["user"])
-    if params["password"] != "":
-        args += " -p " + quote_shell_string(params["password"])
+
+    if params["login"] != False:
+        args += " -u " + quote_shell_string(params["login"][0])
+        args += " -p " + quote_shell_string(params["login"][1])
 
     args += " " + quote_shell_string(ipaddress)
     return args
