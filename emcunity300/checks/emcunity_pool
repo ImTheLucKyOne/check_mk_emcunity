@@ -91,7 +91,7 @@ def check_emcunity_pool(item, params, info):
             hdetail = pools[pool]["Health details"]
             
             # get status, infotext and perfdata
-            status, infotext, perfdata = df_check_filesystem_single(g_hostname, item, size_mb, avail_mb, 0, None, None, params)
+            status, infotext, perfdata = df_check_filesystem_single(item, size_mb, avail_mb, 0, None, None, params)
             perfdata += [ ('subscription', str(sub_mb) + 'MB'), ]
             infotext += ", subscription: %.lf%%" % (sub_percent)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
@@ -102,7 +102,7 @@ check_info["emcunity_pool"] = {
     'inventory_function'         :    inventory_emcunity_pool,
     'has_perfdata'               :    True,
     'service_description'        :    'Pool %s',
-    'includes'                   :    [ 'emcunity.include', 'df.include' ],
+    'includes'                   :    [ 'emcunity.include', 'df.include', 'size_trend.include' ],
     'group'                      :    "filesystem",
     'default_levels_variable'    :    "filesystem_default_levels",
 }
