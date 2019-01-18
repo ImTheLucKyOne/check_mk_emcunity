@@ -1,0 +1,21 @@
+title: EMC Unity Storage: CPU Utilization per Storage Processor
+agents: emcunity
+catalog: hw/storagehw/emc
+license: GPL
+distribution: check_mk
+description:
+ Reports the CPU Utilization for each SP of a EMC Unity storage
+ device.
+
+ The check returns {WARN} or {CRIT} if the utilization in percent is higher
+ than given levels and {OK} otherwise. Levels are to be set by WATO rule.
+
+ The information is retrieved by the special agent agent_emcunity which uses
+ EMC's command line tool uemcli.
+
+item:
+ The name of the SP.
+
+inventory:
+ Automatically configures one check for every SP listed in the agent output..
+
