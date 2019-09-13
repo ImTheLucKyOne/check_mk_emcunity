@@ -48,6 +48,8 @@ def inventory_emcunity_hostcons(info):
 
 def check_emcunity_hostcons(item, params, info):
 # parse info, just get data we want for this check by defining the keys
+    if not info:
+        return
     keys = [ "Name", "OS type", "Health state", "Health details" ]
     cons = emcunity_parse_info(info, keys)
     multi = []
