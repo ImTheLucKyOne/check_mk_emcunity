@@ -10,7 +10,9 @@ If you are searching for check_mk plugins to monitor your Dell EMC Unity Storage
 I am not a professional programmer and I know there are some design and coding flaws in my python code. I try to keep track of what to do/change here https://github.com/ImTheLucKyOne/check_mk_emcunity/issues. Please let me know if you have useful hints regarding changes or fixes.
 
 # Prerequisites / Installation:
-The latest version of the cmk package does not work with cmk versions < 1.5.0. The last version that works for cmk < 1.5.0 is version 1.2.4 of the mkp package.
+The latest version of the cmk package does not work with cmk versions < 1.6.0.
+Use the package 2.2.1 for cmk 1.5.x.
+Use the package 1.2.4 for cmk < 1.5.x.
 
 The special agent makes use of the Dell CLI tool "uemcli" (documentation: https://www.emc.com/collateral/TechnicalDocument/docu69330.pdf). You can download it from the dell support website ("https://support.emc.com").
 1) It has to be installed on your check_mk server.
