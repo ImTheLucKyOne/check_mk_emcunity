@@ -76,15 +76,7 @@ def check_emcunity_pool(item, params, info):
         if name == item:
             # get health details
             hstate = pools[pool]["Health state"]
-            hstate_num = int(re.search("\d+", hstate.lstrip()).group(0))
-            if hstate_num == 0:
-                status = 3 #UNKN
-            elif hstate_num == 5:
-                status = 0 #OK
-            elif hstate_num < 20:
-                status = 1 #WARN
-            else:
-                status = 2 #CRIT
+            status = parse_emcstate(hstate)
             hdetail = pools[pool]["Health details"]
             yield status, "State: %s %s" % (hstate, hdetail)
 
