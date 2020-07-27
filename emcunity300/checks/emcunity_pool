@@ -74,6 +74,20 @@ def check_emcunity_pool(item, params, info):
     for pool in pools:
         name = pools[pool]["Name"]
         if name == item:
+            # get health details
+            hstate = pools[pool]["Health state"]
+            hstate_num = int(re.search("\d+", hstate.lstrip()).group(0))
+            if hstate_num == 0:
+                status = 3 #UNKN
+            elif hstate_num == 5:
+                status = 0 #OK
+            elif hstate_num < 20:
+                status = 1 #WARN
+            else:
+                status = 2 #CRIT
+            hdetail = pools[pool]["Health details"]
+            yield status, "State: %s %s" % (hstate, hdetail)
+
             # get bytes from agent output
             size_B = re.search("\d+", pools[pool]["Total space"].lstrip()).group(0)
             used_B = re.search("\d+", pools[pool]["Current allocation"].lstrip()).group(0)
@@ -86,16 +100,11 @@ def check_emcunity_pool(item, params, info):
             sub_mb = int(sub_B) / 1024.0 / 1024.0
             sub_percent = (sub_mb / size_mb) * 100
 
-            # get health details
-            hstate = pools[pool]["Health state"]
-            hdetail = pools[pool]["Health details"]
-            
             # get status, infotext and perfdata
             status, infotext, perfdata = df_check_filesystem_single(item, size_mb, avail_mb, 0, None, None, params)
             perfdata += [ ('subscription', str(sub_mb) + 'MB'), ]
             infotext += ", subscription: %.lf%%" % (sub_percent)
-            infotext += ", EMC State: %s %s" % (hstate, hdetail)
-    return status, infotext, perfdata
+            yield status, infotext, perfdata
 
 check_info["emcunity_pool"] = {
     'check_function'             :    check_emcunity_pool,
