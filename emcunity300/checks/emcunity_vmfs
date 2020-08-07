@@ -94,9 +94,17 @@ def check_emcunity_vmfs(item, params, info):
             avail_mb = size_mb - used_mb
             hstate = vmfs[vmf]["Health state"]
             hdetail = vmfs[vmf]["Health details"]
+            # do not get OK_BUT state as WARN and ignore the systems threshold for its fs
+            if hstate != "OK_BUT (7)":
+                emcstate = parse_emcstate(hstate)
+            else:
+                emcstate = 0
             status, infotext, perfdata = df_check_filesystem_single(item, size_mb, avail_mb, 0, None, None, params)
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
-    return status, infotext, perfdata
+    if emcstate > status:
+        return emcstate, infotext, perfdata
+    else:
+        return status, infotext, perfdata
 
 check_info["emcunity_vmfs"] = {
     'check_function'             :    check_emcunity_vmfs,
