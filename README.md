@@ -15,12 +15,13 @@ I am not a professional programmer and I know there are some design and coding f
 - Use the package 1.2.4 for cmk < 1.5.x.
 
 The special agent makes use of the Dell CLI tool "uemcli" (documentation: https://www.emc.com/collateral/TechnicalDocument/docu69330.pdf). You can download it from the dell support website ("https://support.emc.com").
-1) It has to be installed on your check_mk server.
-2) The user running the agent needs a home directory.
-3) The user running the agent (the CMK/OMD user) needs to connect to your EMC Unity system at least once over CLI to confirm the certificate and cache that information into its home directory. See the EMC documentation for details about how to connect to your Unity over CLI.
-4) Download and install the latest emcunity-x.mkp Check_MK package from this github site.
-5) Create a new WATO rule "Datasource Programs - Check state of EMC Unity storage systems"
-6) Enter an admin user and the password for this user to connect to the EMC Unity
+1) Install uemcli on your cmk server
+2) Create a (local) user on your Unity with Operator role (read only) - do not use your admin account for monitoring!
+3) Execute on you cmk server with your site user (Connection with cmk only works after one time usage on command line)
+   ```uemcli -d hostname -u username -securePassword -sslPolicy store /sys/general show```
+5) Download and install the latest emcunity-x.mkp Check_MK package from this github site.
+6) Create a new WATO rule "Datasource Programs - Check state of EMC Unity storage systems"
+7) Enter user and the password for this user to connect to the EMC Unity
 
 # emcunity.mkp content:
 - special agent "agent_emcunity" plus according WATO rule
