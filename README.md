@@ -40,3 +40,4 @@ Special thanks to the users who are helping me to improve this extension are goi
 - pdcemulator
 - Bob (cadencep45)
 - elisalepida
+- Andreas Döhler
