@@ -83,7 +83,11 @@ def check_emcunity_fs(item, params, info):
             # Size
             size_B = re.search("\d+", filesystems[fs]["Size"].lstrip()).group(0)
             # Size used
-            used_B = re.search("\d+", filesystems[fs]["Size used"].lstrip()).group(0)
+            try:
+                used_B = re.search("\d+", filesystems[fs]["Size used"].lstrip()).group(0)
+            except AttributeError:
+                used_B = 0
+
             # Current allocation
             allocated_B = re.search("\d+", filesystems[fs]["Current allocation"].lstrip()).group(0)
             avail_B = int(size_B) - int(used_B)
