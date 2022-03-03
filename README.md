@@ -1,3 +1,5 @@
+# These plugins are no longer in "development". Issues won't get addressed or fixed by me. Feel free to use the code to write you own plugins.
+
 # check_mk_emcunity
 Check_MK Extensions for Dell EMC Unity Storages
 
@@ -14,7 +16,11 @@ I am not a professional programmer and I know there are some design and coding f
 - Use the package 2.2.1 for cmk 1.5.x.
 - Use the package 1.2.4 for cmk < 1.5.x.
 
-The special agent makes use of the Dell CLI tool "uemcli" (documentation: https://www.emc.com/collateral/TechnicalDocument/docu69330.pdf). You can download it from the dell support website ("https://support.emc.com").
+The special agent makes use of the Dell CLI tool "uemcli" (documentation: https://www.emc.com/collateral/TechnicalDocument/docu69330.pdf).
+https://www.dell.com/support/home/de-de/product-support/product/unity-300/drivers
+You will need the keyword search "uem cli" to find the correct downloads.
+At the moment it is not possible to find or download the downloads without logging in to the Dell support page.
+
 1) Install uemcli on your cmk server
 2) Create a (local) user on your Unity with Operator role (read only) - do not use your admin account for monitoring!
 3) Execute on you cmk server with your site user (Connection with cmk only works after one time usage on command line)
