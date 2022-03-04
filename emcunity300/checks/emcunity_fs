@@ -85,7 +85,7 @@ def check_emcunity_fs(item, params, info):
             infotext += ", EMC State: %s %s" % (hstate, hdetail)
 
             hstate_code = parse_emcstate(hstate)
-            if hstate_code > 1 and hstate_code > status:
+            if hstate_code > 0 and hstate_code > status:
                 status = hstate_code
 
     return status, infotext, perfdata
